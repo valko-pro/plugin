@@ -55,7 +55,6 @@ function extra_fields_box_func( $post ){
 	</p>
 	<input type="hidden" name="extra_fields_nonce" value="<?php echo wp_create_nonce(__FILE__); ?>" />
 <?php
-//на 1 все окей, а на нулю пропадає взагалі з бд
 }
 
 // включаем обновление полей при сохранении
@@ -86,4 +85,37 @@ function my_extra_fields_update( $post_id ){
 	return $post_id;
 }
 
+// Добавляємо колонки
+add_filter( 'manage_blocks_ol_posts_columns', function ( $columns ) {
+	$my_columns = [
+		'id'    => 'Id',
+		'block_status' => 'Status',
+	];
+
+	return array_slice( $columns, 0, 1 ) + $my_columns + $columns;
+} );
+
+// Вивиодимо дані для тих колонок
+add_action( 'manage_blocks_ol_posts_custom_column', function ( $column_name ) {
+	if ( $column_name === 'id' ) {
+		the_ID();
+	}
+
+  if ( $column_name === 'block_status' && has_post_block_status() ) {
+		?>
+		<a href="<?php echo get_edit_post_link(); ?>">
+			<?php the_post_block_status( 'block_status' ); ?>
+		</a>
+		<?php
+	}
+} );
+
+/*
+add_action('manage_'.'blocks_ol'.'_postmeta'.'_custom_column', 'fill_status_column', 5, 2 );
+function fill_status_column( $colname, $post_id ){
+	if( $colname === 'meta_value' ){
+		echo get_post_meta( $post_id, 'meta_value', 1 );
+	}
+}
+*/
 ?>
